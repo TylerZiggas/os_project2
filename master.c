@@ -1,26 +1,20 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/wait.h>
+#include "master.h"
 
-//static enum state{idle, want_in, in_cs};
-//static int turn;
-//static int n;
-//static enum state flag[20];
-//static int sum;
+void setupTimer(int);
+void spawnChild(int);
+void signalHandler(int);
+void fillFile();
+void helpMenu();
+
+bool flag = false;
 
 int main (int argc, char *argv[]) {
-	extern int n;
-	int character, shmid, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild = 0, i, j, flagSet, status;
+	programName = argv[0];
+	int character, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild;
 	FILE* datafile;
-	char *shm, *ptr;
-	key_t key;
+	//touchFile("datafile");
+	touchFile("output.log");
+	//signal(SIGINT, signalHandler);
 
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) {
 		switch (character) {
@@ -58,13 +52,15 @@ int main (int argc, char *argv[]) {
 		if (!datafile) {
 			printf("Problem with the datafile.");
 			return 1;
-		}
+		} //else {
+		//	fillFile(*datafile);
+		//}
 	}
 	
-	if ((key = ftok("./", 5393)) == -1) {
-		perror("key");
-		return 1;	
-	}
+
+	allocateSPM();
+
+	//int loadInts(datafile);
 
 	while(fscanf(datafile, "%d", &temp) == 1) {
 		items++;
@@ -72,77 +68,152 @@ int main (int argc, char *argv[]) {
 
 	if (items % 2 == 1) {
 		items++;
-	}	
+	}
+	//int intArray[items];
+	//intArray[items] = 0;
+	double depthD = 0;
+	depthD = log(items)/log(2);
+	int depth = (int) ceil(depthD);
+	printf("%d\n", depth);	
 
-	int intArray[items];
-	intArray[items] = 0;
 	printf("%d\n", items);
 
 	rewind(datafile);
-	shmid = shmget(key, items*2, IPC_CREAT | 0600);	
-	if (shmid < 0) {
-		perror("shmget");
-		return 1;
-	}
-	
-	shm = shmat(shmid, NULL, 0);
-	if (shm == (char *) -1) {
-		perror("shmat");
-		return 1;
-	}
 
-	while (count <= items && fscanf(datafile, "%d", &intArray[count]) == 1) {
+	while (count <= items && fscanf(datafile, "%d", &spm->intArray[count]) == 1) {
+		printf("%d\n", spm->intArray[count]);
 		count++;
 	}
-
 	
+	fclose(datafile);
+	spm->total = numChild;
+	int s = 5;
+	int i = 0;
+	int j = numChild;
+	int k = numChild;
 
-
-	char ok = 's';
-	for (;currentChild <= numChild; currentChild++) {
-		fork();
-		execl("./bin_adder", "bin_adder", (char *) NULL);
-	}
-
-//	do {
-//		do {
-//			flag[flagSet] = want_in;
-//			j = turn;
-//			while (j != 1 ) 
-//				j = (flag[j] != idle ? turn : (j + 1) % n);
-//			flag[j] = in_cs;
-//			for (j = 0; j < numChild; j++)
-//				if(( j != flagSet ) && (flag[j] == in_cs))
-//					break;
-//		} while (( j < n ) || ( turn != flagSet && flag[turn] != idle));
-//
-//		turn = flagSet;
-//				
-		// critical section
-//		
-//		j = (turn + 1) % n;
-//		while (flag[j] == idle) 
-//			j = (j + 1) % n;
-//
-//		turn = j;
-//		flag[flagSet] = idle;
-//	
-//	} while (1);
-	
-	fclose(datafile); 
-	if (shmdt(shm) == -1) {
-		perror("Failed to detach");
-		return 1;
+while (depth > 0) {
+	i = 0;
+	k = numChild;
+	while (i < s) {
+		spawnChild(i++);
 	}
 	
-	if (shmctl(shmid, IPC_RMID, NULL) == -1) {
-		perror("Failed to remove");
-		return 1;
+	while (k > 0) {
+		wait(NULL);
+		if (i < j) {
+			spawnChild(i++);
+		}
+		k--;
 	}
+	depth--;
+}
+	
+//	setupTimer(timeSec);
 
+	//while (count <= items && fscanf(datafile, "%d", &intArray[count]) == 1) {
+	//	count++;
+	//}
+
+	
+	//fclose(datafile); 
+
+	removeSPM();
 	return 0;
 }
 
-int helpMenu() {
+//void fillFile(FILE* datafile) {
+//	int i = 0;
+//	for (i < 0; i < 64; i++) {
+//		fprintf(datafile, "%d", (rand() % (255 - 0 + 1)));
+//	}
+//}
+
+/* Sets up timer for timeout functionality. */
+//void setupTimer(const int t) {
+//	struct sigaction action;
+//	memset(&action, 0, sizeof(action));
+//	action.sa_handler = signalHandler;
+//	if (sigaction(SIGALRM, &action, NULL) != 0) crash("Failed to set signal action for timer");
+//	
+//	struct itimerval timer;
+//	timer.it_value.tv_sec = t;
+//	timer.it_value.tv_usec = t;
+//	
+//	timer.it_interval.tv_sec = 0;
+//	timer.it_interval.tv_usec = 0;
+//	
+//	if (setitimer(ITIMER_REAL, &timer, NULL) != 0) crash("Failed to set timer");
+//}
+
+//int loadInts(char* datafile) {
+//	FILE* intList = fopen(datafile, "r");
+//}
+
+/* Spawns a child given an index "i". */
+void spawnChild(const int i) {
+	/* Fork the current process. */
+	pid_t pid = fork();
+	
+	/* Check if fork'ing failed. */
+	if (pid == -1) {
+		perror("Failed to create a child process for bin_adder");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Check if is child process. */
+	if (pid == 0) {
+		/* Enable flag to slow interrupt handler. */
+		flag = true;
+		
+		if (i == 0) spm->pgid = getpid();
+		setpgid(0, spm->pgid);
+		
+		/* Disable flag to continue interrupt handler. */
+		flag = false;
+		
+		/* Log the time this child process is starting. */
+		//logOutput("output.log", "%s: Process %d starting\n", getFormattedTime(), i);
+		
+		/* Convert integer "i" to string "id". */
+		char id[256];
+		
+		sprintf(id, "%d", i);		
+		/* Execute child process "palin". */
+		execl("./bin_adder", "bin_adder", id, (char*) NULL);
+	
+		/* Exit successfully. */
+		exit(EXIT_SUCCESS);
+	}
+}
+
+/* Responsible for handling Ctrl+C and timeout signals. */
+//void signalHandler(int s) {
+//	/* If flag is set, wait for just a bit so the child process has time to set a PGID. */
+//	if (flag) sleep(1);
+	
+//	/* Initialize a message. */
+//	char message[4096];
+//	strfcpy(message, "%s: Exiting due to %s signal\n", getFormattedTime(), s == SIGALRM ? "timeout" : "interrupt");
+//	
+//	/* Output that message. */
+//	fprintf(stderr, message);
+//	logOutput("output.log", message);
+//	
+//	/* Send kill signals to all child processes using appropriate signal. */
+//	killpg(spm->pgid, s == SIGALRM ? SIGUSR1 : SIGTERM);
+//	
+//	/* To avoid having zombie processes, wait for all the children to exit. */
+//	while (wait(NULL) > 0);
+//	
+//	/* Remove shared memory. */
+//	removeSPM();
+//	
+//	/* Exit successfully. */
+//	exit(EXIT_SUCCESS);
+//}
+
+void helpMenu() {
 
 }
+

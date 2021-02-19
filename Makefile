@@ -1,21 +1,30 @@
-GCC = gcc
-CFLAGS = -g
-DEPS = master 
-DEPS2 = bin_adder
-OBJ = master.o 
-OBJ2 = bin_adder.o
-.SUFFIXES: .c .o
+CC		= gcc -lm
+CFLAGS		= -Wall -g
 
-all: $(DEPS) $(DEPS2)
+HEADER		= master.h
 
-$(DEPS):$(OBJ)
-	$(GCC) -o $@ $(OBJ)
+MASTER_SRC	= master.c
+MASTER_OBJ	= $(MASTER_SRC:.c=.o)
+MASTER		= master
 
-$(DEPS2):$(OBJ2)
-	$(GCC) -o $@ $(OBJ2)
+OBJ		= shared.o
 
-.c.o:
-	$(GCC) $(CFLAGS) -c $<
+PALIN_SRC	= bin_adder.c
+PALIN_OBJ	= $(PALIN_SRC:.c=.o)
+PALIN		= bin_adder
 
-clean: 
-	/bin/rm -f *.o $(DEPS) $(DEPS2)
+OUTPUT		= $(MASTER) $(PALIN)
+all: $(OUTPUT)
+
+$(MASTER): $(MASTER_OBJ) $(OBJ)
+	$(CC) $(CFLAGS) $(MASTER_OBJ) $(OBJ) -o $(MASTER)
+
+$(PALIN): $(PALIN_OBJ) $(OBJ)
+	$(CC) $(CFLAGS) $(PALIN_OBJ) $(OBJ) -o $(PALIN)
+
+%.o: %.c $(HEADER)
+	$(CC) $(CFLAGS) -c $*.c -o $*.o
+
+.PHONY: clean
+clean:
+	/bin/rm -f $(OUTPUT) *.o *.out *.log
