@@ -27,4 +27,4 @@ $(PALIN): $(PALIN_OBJ) $(OBJ)
 
 .PHONY: clean
 clean:
-	/bin/rm -f $(OUTPUT) *.o *.out *.log
+	/bin/rm -f $(OUTPUT) *.o *.out *_log

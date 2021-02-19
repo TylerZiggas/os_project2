@@ -66,7 +66,7 @@ int main (int argc, char *argv[]) {
 	
 
 	allocateSM();
-	//setupTimer(timeSec);
+	setupTimer(timeSec);
 	while(fscanf(datafile, "%d", &temp) == 1) {
 		items++;
 	}
@@ -102,6 +102,7 @@ int main (int argc, char *argv[]) {
 		k = numChild;
 		while (i < s) {
 			spawnChild(i++);
+			sleep(1);
 		}
 		
 		while (k > 0) {
