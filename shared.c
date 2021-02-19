@@ -10,6 +10,27 @@ void touchFile(char* path) {
 	fclose(newFile);
 }
 
+/* Outputs a formatted string "fmt" to a file given its path "path". */
+void logOutput(char* path, char* fmt, ...) {
+	FILE* fp = fopen(path, "a+");
+	
+	if (fp == NULL) {
+		perror("Failed to open file for logging output");
+		exit(EXIT_FAILURE);
+	}
+		
+	int n = 4096;
+	char buf[n];
+	va_list args;
+	
+	va_start(args, fmt);
+	vsprintf(buf, fmt, args);
+	va_end(args);
+	
+	fprintf(fp, buf);
+	fclose(fp);
+}
+
 /* Allocates and clears shared memory. */
 void allocateSPM() {
 	//logOutput("output.log", "%s: Allocating shared memory\n", getFormattedTime());

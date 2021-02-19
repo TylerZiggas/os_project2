@@ -9,6 +9,9 @@ void signalHandler(int);
 
 int main (int argc, char **argv) {
 	programName=argv[0];
+	signal(SIGTERM, signalHandler);
+	signal(SIGUSR1, signalHandler);
+
 	attachSPM();
 	int id = atoi(argv[1]);
 	int i = 0;
@@ -52,7 +55,7 @@ void process(const int i) {
 	//sleep(rand() % (CS_SLEEP_MAX - CS_SLEEP_MIN + 1) + CS_SLEEP_MIN);
 	
 	/* Log time, PID, index, and string to appropriate output file. */
-	//logOutput("adder.log", "%s %d %d\n", getFormattedTime(), getpid(), i);
+	logOutput("adder_log", "%s %d %d\n", getFormattedTime(), getpid(), i);
 	/* Output that process is exiting critical section. */
 	//fprintf(stderr, "%s: Process %d exiting critical section\n", getFormattedTime(), i);
 	

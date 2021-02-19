@@ -12,8 +12,10 @@ int main (int argc, char *argv[]) {
 	programName = argv[0];
 	int character, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild;
 	FILE* datafile;
+	time_t t;
+
 	touchFile("datafile");
-	touchFile("output.log");
+	touchFile("adder_log");
 	signal(SIGINT, signalHandler);
 
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) {
@@ -54,6 +56,7 @@ int main (int argc, char *argv[]) {
 			return 1;
 		}  {
 			int randCount, random;
+			srand((unsigned) time(&t));
 			for (randCount = 0; randCount < INT_MAX; randCount++) {
 				random =(rand() % (255 + 1));
 				fprintf(datafile, "%d\n", random);
@@ -77,14 +80,14 @@ int main (int argc, char *argv[]) {
 	double depthD = 0;
 	depthD = log(items)/log(2);
 	int depth = (int) ceil(depthD);
-	printf("%d\n", depth);	
+	//printf("%d\n", depth);	
 
-	printf("%d\n", items);
+	//printf("%d\n", items);
 
 	rewind(datafile);
 
 	while (count <= items && fscanf(datafile, "%d", &spm->intArray[count]) == 1) {
-		printf("%d\n", spm->intArray[count]);
+		//printf("%d\n", spm->intArray[count]);
 		count++;
 	}
 	
@@ -95,34 +98,27 @@ int main (int argc, char *argv[]) {
 	int j = numChild;
 	int k = numChild;
 
-while (depth > 0) {
-	i = 0;
-	k = numChild;
-	while (i < s) {
-		spawnChild(i++);
-	}
-	
-	while (k > 0) {
-		wait(NULL);
-		if (i < j) {
+	while (depth > 0) {
+		i = 0;
+		k = numChild;
+		while (i < s) {
 			spawnChild(i++);
 		}
-		k--;
+		
+		while (k > 0) {
+			wait(NULL);
+			if (i < j) {
+				spawnChild(i++);
+			}
+			k--;
+		}
+		depth--;
+		printf("%d\n", depth);
 	}
-	depth--;
-}
 	
 //	setupTimer(timeSec);
 
-	//while (count <= items && fscanf(datafile, "%d", &intArray[count]) == 1) {
-	//	count++;
-	//}
-
-	
-//	fclose(datafile); 
-
 	removeSPM();
-	//fclose(datafile);
 	return 0;
 }
 
@@ -169,11 +165,10 @@ void spawnChild(const int i) {
 		flag = false;
 		
 		/* Log the time this child process is starting. */
-		//logOutput("output.log", "%s: Process %d starting\n", getFormattedTime(), i);
+		//logOutput("adder_log", "%s: Process %d starting\n", getFormattedTime(), i);
 		
 		/* Convert integer "i" to string "id". */
-		char id[256];
-		
+		char id[256];	
 		sprintf(id, "%d", i);		
 		/* Execute child process "palin". */
 		execl("./bin_adder", "bin_adder", id, (char*) NULL);
