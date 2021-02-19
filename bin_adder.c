@@ -12,39 +12,41 @@ int main (int argc, char **argv) {
 	signal(SIGTERM, signalHandler);
 	signal(SIGUSR1, signalHandler);
 
-	attachSPM();
+	attachSM();
 	int id = atoi(argv[1]);
 	int i = 0;
 	for (i = 0; i < 1; i++) {
-		printf("%d\n", spm->intArray[i]);
+		printf("%d\n", sm->intArray[i]);
 	}
 	process(id);
-//	printf("hello\n"); //, this is child %s", argv[1]);
 	return EXIT_SUCCESS;
 }
 
 void process(const int i) {
 	/* Get the total number of workers ever to be in system. */
-	int n = spm->total;
-	
+	int n = sm->total;	
 	/* Output that process wants to enter critical section. */
 //	fprintf(stderr, "%s: Process %d wants to enter critical section\n", getFormattedTime(), i);
 	
 	int j;
 	do {
-		spm->flags[i] = want_in;
-		j = spm->turn;
+		sm->flags[i] = want_in;
+		j = sm->turn;
 		
-		while (j != i)
-			j = (spm->flags[j] != idle) ? spm->turn : (j + 1) % n;
+		while (j != i) { 
+			j = (sm->flags[j] != idle) ? sm->turn : (j + 1) % n;
+		}
+
+		sm->flags[i] = in_cs;
 		
-		spm->flags[i] = in_cs;
-		
-		for (j = 0; j < n; j++)
-			if (j != i && spm->flags[j] == in_cs) break;
-	} while (j < n || (spm->turn != i && spm->flags[spm->turn] != idle));
+		for (j = 0; j < n; j++) {
+			if (j != i && sm->flags[j] == in_cs) {
+				break;
+			}
+		}
+	} while (j < n || (sm->turn != i && sm->flags[sm->turn] != idle));
 	
-	spm->turn = i;
+	sm->turn = i;
 	
 	/* Enter critical section */
 	
@@ -61,29 +63,19 @@ void process(const int i) {
 	
 	/* Exit critical section */
 	
-	j = (spm->turn + 1) % n;
-	while (spm->flags[j] == idle)
+	j = (sm->turn + 1) % n;
+	while (sm->flags[j] == idle) {
 		j = (j + 1) % n;
+	}
 	
-	spm->turn = j;
-	spm->flags[i] = idle;
-	
-	/* Enter remainder section */
-	/* Exit remainder section */
+	sm->turn = j;
+	sm->flags[i] = idle;
 }
 
 /* Responsible for handling Ctrl+C and timeout signals. */
 void signalHandler(int s) {
 	if (s == SIGTERM || s == SIGUSR1) {
-		/* Initialize a message. */
-		//char message[4096];
-		//strfcpy(message, "%s: Process %d exiting due to %s signal\n", getFormattedTime(), id, s == SIGUSR1 ? "timeout" : "interrupt");
-		
-		/* Output that message. */
-		//fprintf(stderr, message);
-		//logOutput("output.log", message);
-		
-		/* Exit abnormally. */
+		printf("Child exiting...\n");
 		exit(EXIT_FAILURE);
 	}
 }

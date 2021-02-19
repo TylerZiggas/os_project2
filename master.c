@@ -3,7 +3,6 @@
 void setupTimer(int);
 void spawnChild(int);
 void signalHandler(int);
-void fillFile();
 void helpMenu();
 
 bool flag = false;
@@ -21,27 +20,27 @@ int main (int argc, char *argv[]) {
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) {
 		switch (character) {
 			case 's':
-				printf("test s");
+				//printf("test s");
 				if (isdigit(*optarg) && atoi(optarg) <= 20 && atoi(optarg) > 1) {
 					numChild = atoi(optarg);
 				} else {
 					errno = 22;
-					perror("-s");
+					perror("-s requires an argument");
 					return 1;
 				}
 				continue;
 			case 't':
-				printf("test t");
+				//printf("test t");
 				if (isdigit(*optarg) && atoi(optarg) > 0) {
 					timeSec = atoi(optarg);
 				} else {
 					errno = 22;
-					perror("-t");
+					perror("-t requires and argument");
 					return 1;
 				}
 				continue;
 			case 'h':
-				printf("test h");
+				//printf("test h");
 				helpMenu();
 				continue;
 			default: 
@@ -66,7 +65,7 @@ int main (int argc, char *argv[]) {
 	}
 	
 
-	allocateSPM();
+	allocateSM();
 	//setupTimer(timeSec);
 	while(fscanf(datafile, "%d", &temp) == 1) {
 		items++;
@@ -86,13 +85,13 @@ int main (int argc, char *argv[]) {
 
 	rewind(datafile);
 
-	while (count <= items && fscanf(datafile, "%d", &spm->intArray[count]) == 1) {
-		//printf("%d\n", spm->intArray[count]);
+	while (count <= items && fscanf(datafile, "%d", &sm->intArray[count]) == 1) {
+		//printf("%d\n", sm->intArray[count]);
 		count++;
 	}
 	
 	fclose(datafile);
-	spm->total = numChild;
+	sm->total = numChild;
 	int s = 5;
 	int i = 0;
 	int j = numChild;
@@ -118,7 +117,7 @@ int main (int argc, char *argv[]) {
 	
 //	setupTimer(timeSec);
 
-	removeSPM();
+	removeSM();
 	return 0;
 }
 
@@ -158,9 +157,8 @@ void spawnChild(const int i) {
 		/* Enable flag to slow interrupt handler. */
 		flag = true;
 		
-		if (i == 0) spm->pgid = getpid();
-		setpgid(0, spm->pgid);
-		
+		if (i == 0) sm->pgid = getpid();
+		setpgid(0, sm->pgid);
 		/* Disable flag to continue interrupt handler. */
 		flag = false;
 		
@@ -183,28 +181,22 @@ void signalHandler(int s) {
 	/* If flag is set, wait for just a bit so the child process has time to set a PGID. */
 	if (flag) sleep(1);
 	
-	/* Initialize a message. */
-//	char message[4096];
-//	strfcpy(message, "%s: Exiting due to %s signal\n", getFormattedTime(), s == SIGALRM ? "timeout" : "interrupt");
-//	
-//	/* Output that message. */
-//	fprintf(stderr, message);
-//	logOutput("output.log", message);
-//	
-//	/* Send kill signals to all child processes using appropriate signal. */
-	killpg(spm->pgid, s == SIGALRM ? SIGUSR1 : SIGTERM);
-//	
-//	/* To avoid having zombie processes, wait for all the children to exit. */
+	killpg(sm->pgid, s == SIGALRM ? SIGUSR1 : SIGTERM);
+
 	while (wait(NULL) > 0);
-//	
-//	/* Remove shared memory. */
-	removeSPM();
+
+	printf("Parent exiting...\n");	
+	/* Remove shared memory. */
+	removeSM();
 //	
 //	/* Exit successfully. */
 	exit(EXIT_SUCCESS);
 }
 
 void helpMenu() {
-
+	printf("This program takes in a numbers of an array of size INT_MAX (specified in master.h) and uses the binary tree algorithm to add the integers in the array.");
+	printf("The following are commands after inputting ./master : -s (followed by number of allowed processes between 0 and 20, -t (followed by amount of time process is allowed), -h for help, and lastly the file to open)");
+	printf("-s and -t are required to take in an input, they will ignore the input if it is out of bounds or exit the program if it is the wrong type.");
+	printf("The minimum requirement to run the program is to simply use ./master *name of file*, as the program has default values for -s and -t.");
 }
 
