@@ -12,9 +12,9 @@ int main (int argc, char *argv[]) {
 	programName = argv[0];
 	int character, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild;
 	FILE* datafile;
-	//touchFile("datafile");
+	touchFile("datafile");
 	touchFile("output.log");
-	//signal(SIGINT, signalHandler);
+	signal(SIGINT, signalHandler);
 
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) {
 		switch (character) {
@@ -48,20 +48,23 @@ int main (int argc, char *argv[]) {
 		}
 	}
 	if (optind < argc) {
-		datafile = fopen(argv[optind], "r");
+		datafile = fopen(argv[optind], "r+");
 		if (!datafile) {
 			printf("Problem with the datafile.");
 			return 1;
-		} //else {
-		//	fillFile(*datafile);
-		//}
+		}  {
+			int randCount, random;
+			for (randCount = 0; randCount < INT_MAX; randCount++) {
+				random =(rand() % (255 + 1));
+				fprintf(datafile, "%d\n", random);
+			}
+			rewind(datafile);
+		}
 	}
 	
 
 	allocateSPM();
-
-	//int loadInts(datafile);
-
+	//setupTimer(timeSec);
 	while(fscanf(datafile, "%d", &temp) == 1) {
 		items++;
 	}
@@ -116,40 +119,33 @@ while (depth > 0) {
 	//}
 
 	
-	//fclose(datafile); 
+//	fclose(datafile); 
 
 	removeSPM();
+	//fclose(datafile);
 	return 0;
 }
 
-//void fillFile(FILE* datafile) {
-//	int i = 0;
-//	for (i < 0; i < 64; i++) {
-//		fprintf(datafile, "%d", (rand() % (255 - 0 + 1)));
-//	}
-//}
-
-/* Sets up timer for timeout functionality. */
-//void setupTimer(const int t) {
-//	struct sigaction action;
-//	memset(&action, 0, sizeof(action));
-//	action.sa_handler = signalHandler;
-//	if (sigaction(SIGALRM, &action, NULL) != 0) crash("Failed to set signal action for timer");
-//	
-//	struct itimerval timer;
-//	timer.it_value.tv_sec = t;
-//	timer.it_value.tv_usec = t;
-//	
-//	timer.it_interval.tv_sec = 0;
-//	timer.it_interval.tv_usec = 0;
-//	
-//	if (setitimer(ITIMER_REAL, &timer, NULL) != 0) crash("Failed to set timer");
-//}
-
-//int loadInts(char* datafile) {
-//	FILE* intList = fopen(datafile, "r");
-//}
-
+void setupTimer(const int t) {
+	struct sigaction action;
+	memset(&action, 0, sizeof(action));
+	action.sa_handler = signalHandler;
+	if (sigaction(SIGALRM, &action, NULL) != 0) {
+		perror("Failed to set signal action for timer");
+		exit(EXIT_FAILURE);	
+	}
+	struct itimerval timer;
+	timer.it_value.tv_sec = t;
+	timer.it_value.tv_usec = t;
+	
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_usec = 0;
+	
+	if (setitimer(ITIMER_REAL, &timer, NULL) != 0) {
+		perror("Failed to set timer");
+		exit(EXIT_FAILURE);
+	}
+}
 /* Spawns a child given an index "i". */
 void spawnChild(const int i) {
 	/* Fork the current process. */
@@ -188,11 +184,11 @@ void spawnChild(const int i) {
 }
 
 /* Responsible for handling Ctrl+C and timeout signals. */
-//void signalHandler(int s) {
-//	/* If flag is set, wait for just a bit so the child process has time to set a PGID. */
-//	if (flag) sleep(1);
+void signalHandler(int s) {
+	/* If flag is set, wait for just a bit so the child process has time to set a PGID. */
+	if (flag) sleep(1);
 	
-//	/* Initialize a message. */
+	/* Initialize a message. */
 //	char message[4096];
 //	strfcpy(message, "%s: Exiting due to %s signal\n", getFormattedTime(), s == SIGALRM ? "timeout" : "interrupt");
 //	
@@ -201,17 +197,17 @@ void spawnChild(const int i) {
 //	logOutput("output.log", message);
 //	
 //	/* Send kill signals to all child processes using appropriate signal. */
-//	killpg(spm->pgid, s == SIGALRM ? SIGUSR1 : SIGTERM);
+	killpg(spm->pgid, s == SIGALRM ? SIGUSR1 : SIGTERM);
 //	
 //	/* To avoid having zombie processes, wait for all the children to exit. */
-//	while (wait(NULL) > 0);
+	while (wait(NULL) > 0);
 //	
 //	/* Remove shared memory. */
-//	removeSPM();
+	removeSPM();
 //	
 //	/* Exit successfully. */
-//	exit(EXIT_SUCCESS);
-//}
+	exit(EXIT_SUCCESS);
+}
 
 void helpMenu() {
 

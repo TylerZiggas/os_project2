@@ -5,13 +5,14 @@
 #include "master.h"
 
 void process(const int);
+void signalHandler(int);
 
 int main (int argc, char **argv) {
 	programName=argv[0];
 	attachSPM();
 	int id = atoi(argv[1]);
 	int i = 0;
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < 1; i++) {
 		printf("%d\n", spm->intArray[i]);
 	}
 	process(id);
@@ -66,4 +67,20 @@ void process(const int i) {
 	
 	/* Enter remainder section */
 	/* Exit remainder section */
+}
+
+/* Responsible for handling Ctrl+C and timeout signals. */
+void signalHandler(int s) {
+	if (s == SIGTERM || s == SIGUSR1) {
+		/* Initialize a message. */
+		//char message[4096];
+		//strfcpy(message, "%s: Process %d exiting due to %s signal\n", getFormattedTime(), id, s == SIGUSR1 ? "timeout" : "interrupt");
+		
+		/* Output that message. */
+		//fprintf(stderr, message);
+		//logOutput("output.log", message);
+		
+		/* Exit abnormally. */
+		exit(EXIT_FAILURE);
+	}
 }
