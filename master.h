@@ -20,7 +20,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define INT_MAX 64
+#define INT_MAX 32
 #define FORMATTED_TIME_SIZE 50
 #define FORMATTED_TIME_FORMAT "%H:%M:%S"
 
@@ -39,15 +39,17 @@ char* programName;
 
 int smKey;
 int smID;
+int depthIncrement;
 struct SharedMemory* sm;
 
 void touchFile(char*);
+void logOutput(char*, char*, ...);
 void allocateSM();
 void attachSM();
 void releaseSM();
 void deleteSM();
 void removeSM();
-void logOutput(char*, char*, ...);
+void updateIncrement();
 char* getFormattedTime();
 
 #endif

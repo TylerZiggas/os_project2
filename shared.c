@@ -74,6 +74,15 @@ void deleteSM() {
 	}
 }
 
+void updateIncrement() {
+	if (depthIncrement == 1) {
+		depthIncrement += 1;
+	} else {
+		depthIncrement *= 2;
+	}
+
+}
+
 /* Returns the current time on the system. */
 char* getFormattedTime() {
 	char* formattedTime = malloc(FORMATTED_TIME_SIZE * sizeof(char));
