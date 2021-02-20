@@ -32,14 +32,13 @@ struct SharedMemory {
 	enum state flags[20]; /* Array of all child process' mutual exclusion state. */
 	enum state turn; /* Index of process that is writing to log file. */
 	int intArray[INT_MAX]; /* Strings loaded from input. */
+	int startingDepth;
 	pid_t pgid; /* Child process group ID. */
 };
 
 char* programName;
-
 int smKey;
 int smID;
-int depthIncrement;
 struct SharedMemory* sm;
 
 void touchFile(char*);
@@ -49,7 +48,8 @@ void attachSM();
 void releaseSM();
 void deleteSM();
 void removeSM();
-void updateIncrement();
+//void updateIncrement();
+int  depthCounter(int, int);
 char* getFormattedTime();
 
 #endif

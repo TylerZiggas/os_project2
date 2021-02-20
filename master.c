@@ -1,3 +1,9 @@
+// Author: Tyler Ziggas
+// Date: February 2021
+// This program takes in -s, -t, or -h with -s requiring an integer between 2 and 20, -t requiring an integer above 0, and -h showing a help screen
+// After any combination of those needed, you simply "datafile" as that file will automatically be filled with numbers
+// Those numbers in the file are put into an array and are added until finally index 0 of the array has the sum of all integers in the file.
+
 #include "master.h"
 
 void setupTimer(int);
@@ -11,8 +17,9 @@ int main (int argc, char *argv[]) {
 	programName = argv[0];
 	int character, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild;
 	FILE* datafile;
+	//depthIncrement = 1;
 	time_t t;
-	depthIncrement = 1;
+	//int depthIncrement = 1;
 	touchFile("datafile");
 	touchFile("adder_log");
 	signal(SIGINT, signalHandler);
@@ -20,7 +27,6 @@ int main (int argc, char *argv[]) {
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) {
 		switch (character) {
 			case 's':
-				//printf("test s");
 				if (isdigit(*optarg) && atoi(optarg) <= 20 && atoi(optarg) > 1) {
 					numChild = atoi(optarg);
 				} else {
@@ -30,7 +36,6 @@ int main (int argc, char *argv[]) {
 				}
 				continue;
 			case 't':
-				//printf("test t");
 				if (isdigit(*optarg) && atoi(optarg) > 0) {
 					timeSec = atoi(optarg);
 				} else {
@@ -40,7 +45,6 @@ int main (int argc, char *argv[]) {
 				}
 				continue;
 			case 'h':
-				//printf("test h");
 				helpMenu();
 				continue;
 			default: 
@@ -76,6 +80,7 @@ int main (int argc, char *argv[]) {
 	double depthD = 0;
 	depthD = log(items)/log(2);
 	int depth = (int) ceil(depthD);
+	sm->startingDepth = depth;
 	//printf("%d\n", depth);	
 
 	//printf("%d\n", items);
@@ -96,7 +101,8 @@ int main (int argc, char *argv[]) {
 	int k = numChild;
 	int childCounter = 0;	
 
-	while (depth > 0) {	
+	while (depth > 0) {
+		int depthIncrement = depthCounter(sm->startingDepth, depth);
 		i = index;
 		while (childCounter < s) {
 			spawnChild(childCounter++, i, depth);
@@ -111,14 +117,14 @@ int main (int argc, char *argv[]) {
 			}
 			k--;
 		}
+		sleep(1);
 		depth--;
-		updateIncrement();
-		printf("%d\n", depth);
+		//updateIncrement();
+		//printf("%d\n", depth);
 		index = 0;
 		childCounter = 0;
 		s /= 2;
 	}
-
 	removeSM();
 	return 0;
 }
@@ -143,7 +149,7 @@ void setupTimer(const int t) {
 		exit(EXIT_FAILURE);
 	}
 }
-/* Spawns a child given an index "i". */
+
 void spawnChild(int childCounter, int i, int depth) {
 	/* Fork the current process. */
 	pid_t pid = fork();
@@ -168,11 +174,13 @@ void spawnChild(int childCounter, int i, int depth) {
 		//logOutput("adder_log", "%s: Process %d starting\n", getFormattedTime(), i);
 		
 		/* Convert integer "i" to string "id". */
-		//char id[256];	
-		//sprintf(id, "%d", i);	
-		printf("child here, %d, %d\n", i, depth);
-		execl("./bin_adder", "bin_adder", i, depth, (char*) NULL);
-		sleep(1);
+		char id[256];	
+		sprintf(id, "%d", childCounter);	
+		//printf("child here, %d, %d\n", i, depth);
+		char bufferi[3], bufferd[2];
+		sprintf(bufferi, "%d", i);
+		sprintf(bufferd, "%d", depth);
+		execl("./bin_adder", "bin_adder", bufferi, bufferd, id, (char*) NULL);
 		exit(EXIT_SUCCESS);
 	}
 }
@@ -186,10 +194,7 @@ void signalHandler(int s) {
 	while (wait(NULL) > 0);
 
 	printf("Parent exiting...\n");	
-	/* Remove shared memory. */
 	removeSM();
-//	
-//	/* Exit successfully. */
 	exit(EXIT_SUCCESS);
 }
 

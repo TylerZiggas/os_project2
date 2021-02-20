@@ -73,12 +73,19 @@ void deleteSM() {
 		}
 	}
 }
-
-void updateIncrement() {
-	if (depthIncrement == 1) {
-		depthIncrement += 1;
+	
+int depthCounter(int startingDepth, int depth) {
+	int depthIncrement = 1;
+	int counterDepth = startingDepth;
+	if (counterDepth == depth) {
+		return depthIncrement; 
 	} else {
-		depthIncrement *= 2;
+		while(counterDepth > depth) {
+			counterDepth--;
+			depthIncrement = depthIncrement*2;	
+			//printf("DepthInc: %d\n", depthIncrement);
+		}
+		return depthIncrement;
 	}
 
 }
