@@ -9,16 +9,19 @@ void signalHandler(int);
 
 int main (int argc, char **argv) {
 	programName=argv[0];
+	//int test = atoi(argv[1]);
+	printf("Test run");
 	signal(SIGTERM, signalHandler);
 	signal(SIGUSR1, signalHandler);
-
+	//printf("%s\n %s\n", argv[1], argv[2]);
 	attachSM();
-	int id = atoi(argv[1]);
+	//int id = atoi(argv[1]);
 	int i = 0;
 	for (i = 0; i < 1; i++) {
-		printf("%d\n", sm->intArray[i]);
+		sleep(1);
+		//printf("whats this %d\n", sm->intArray[i]);
 	}
-	process(id);
+	//process(id);
 	return EXIT_SUCCESS;
 }
 

@@ -1,7 +1,7 @@
 #include "master.h"
 
 void setupTimer(int);
-void spawnChild(int);
+void spawnChild(int, int, int);
 void signalHandler(int);
 void helpMenu();
 
@@ -12,7 +12,7 @@ int main (int argc, char *argv[]) {
 	int character, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild;
 	FILE* datafile;
 	time_t t;
-
+	depthIncrement = 1;
 	touchFile("datafile");
 	touchFile("adder_log");
 	signal(SIGINT, signalHandler);
@@ -70,12 +70,9 @@ int main (int argc, char *argv[]) {
 	while(fscanf(datafile, "%d", &temp) == 1) {
 		items++;
 	}
-
 	if (items % 2 == 1) {
 		items++;
 	}
-	//int intArray[items];
-	//intArray[items] = 0;
 	double depthD = 0;
 	depthD = log(items)/log(2);
 	int depth = (int) ceil(depthD);
@@ -92,31 +89,35 @@ int main (int argc, char *argv[]) {
 	
 	fclose(datafile);
 	sm->total = numChild;
-	int s = 5;
-	int i = 0;
+	int s = items/2;
+	int index = 0;
+	int i;
 	int j = numChild;
 	int k = numChild;
+	int childCounter = 0;	
 
-	while (depth > 0) {
-		i = 0;
-		k = numChild;
-		while (i < s) {
-			spawnChild(i++);
-			sleep(1);
+	while (depth > 0) {	
+		i = index;
+		while (childCounter < s) {
+			spawnChild(childCounter++, i, depth);
+			i = i + depthIncrement + depthIncrement;
 		}
 		
 		while (k > 0) {
 			wait(NULL);
 			if (i < j) {
-				spawnChild(i++);
+				spawnChild(childCounter++, i, depth);
+				i = i + depthIncrement + depthIncrement;
 			}
 			k--;
 		}
 		depth--;
+		updateIncrement();
 		printf("%d\n", depth);
+		index = 0;
+		childCounter = 0;
+		s /= 2;
 	}
-	
-//	setupTimer(timeSec);
 
 	removeSM();
 	return 0;
@@ -143,7 +144,7 @@ void setupTimer(const int t) {
 	}
 }
 /* Spawns a child given an index "i". */
-void spawnChild(const int i) {
+void spawnChild(int childCounter, int i, int depth) {
 	/* Fork the current process. */
 	pid_t pid = fork();
 	
@@ -158,7 +159,7 @@ void spawnChild(const int i) {
 		/* Enable flag to slow interrupt handler. */
 		flag = true;
 		
-		if (i == 0) sm->pgid = getpid();
+		if (childCounter == 0) sm->pgid = getpid();
 		setpgid(0, sm->pgid);
 		/* Disable flag to continue interrupt handler. */
 		flag = false;
@@ -167,17 +168,15 @@ void spawnChild(const int i) {
 		//logOutput("adder_log", "%s: Process %d starting\n", getFormattedTime(), i);
 		
 		/* Convert integer "i" to string "id". */
-		char id[256];	
-		sprintf(id, "%d", i);		
-		/* Execute child process "palin". */
-		execl("./bin_adder", "bin_adder", id, (char*) NULL);
-	
-		/* Exit successfully. */
+		//char id[256];	
+		//sprintf(id, "%d", i);	
+		printf("child here, %d, %d\n", i, depth);
+		execl("./bin_adder", "bin_adder", i, depth, (char*) NULL);
+		sleep(1);
 		exit(EXIT_SUCCESS);
 	}
 }
 
-/* Responsible for handling Ctrl+C and timeout signals. */
 void signalHandler(int s) {
 	/* If flag is set, wait for just a bit so the child process has time to set a PGID. */
 	if (flag) sleep(1);
