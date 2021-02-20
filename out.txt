@@ -1,0 +1,43 @@
+using this list to test:
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+The total number of ints to sum is 16
+The total depth of the tree is 4.0
+working on int pair at indexes (0, 1) with values (1, 1)
+updated shared memory at position 0 to value 2
+working on int pair at indexes (2, 3) with values (1, 1)
+updated shared memory at position 2 to value 2
+working on int pair at indexes (4, 5) with values (1, 1)
+updated shared memory at position 4 to value 2
+working on int pair at indexes (6, 7) with values (1, 1)
+updated shared memory at position 6 to value 2
+working on int pair at indexes (8, 9) with values (1, 1)
+updated shared memory at position 8 to value 2
+working on int pair at indexes (10, 11) with values (1, 1)
+updated shared memory at position 10 to value 2
+working on int pair at indexes (12, 13) with values (1, 1)
+updated shared memory at position 12 to value 2
+working on int pair at indexes (14, 15) with values (1, 1)
+updated shared memory at position 14 to value 2
+done with depth 4.0 proceeding with depth 3.0
+now incrementing indexes by 2
+working on int pair at indexes (0, 2) with values (2, 2)
+updated shared memory at position 0 to value 4
+working on int pair at indexes (4, 6) with values (2, 2)
+updated shared memory at position 4 to value 4
+working on int pair at indexes (8, 10) with values (2, 2)
+updated shared memory at position 8 to value 4
+working on int pair at indexes (12, 14) with values (2, 2)
+updated shared memory at position 12 to value 4
+done with depth 3.0 proceeding with depth 2.0
+now incrementing indexes by 4
+working on int pair at indexes (0, 4) with values (4, 4)
+updated shared memory at position 0 to value 8
+working on int pair at indexes (8, 12) with values (4, 4)
+updated shared memory at position 8 to value 8
+done with depth 2.0 proceeding with depth 1.0
+now incrementing indexes by 8
+working on int pair at indexes (0, 8) with values (8, 8)
+updated shared memory at position 0 to value 16
+done with depth 1.0 proceeding with depth 0.0
+now incrementing indexes by 16
+reached the end, result is 16
