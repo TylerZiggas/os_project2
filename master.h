@@ -20,7 +20,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define INT_MAX 32 // Creation of constants 
+#define INT_MAX 64 // Creation of constants 
 #define FORMATTED_TIME_SIZE 50 
 #define FORMATTED_TIME_FORMAT "%H:%M:%S"
 

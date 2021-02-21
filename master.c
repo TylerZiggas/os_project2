@@ -107,30 +107,30 @@ int main (int argc, char *argv[]) {
 		//}
 
 		while (i < items) {
-			wait(NULL);
+			//wait(NULL);
 			if (childCounter < maxChild) {
 				spawnChild(childCounter++, i, depth);
 				//printf("%d\n", childCounter);
 				i = i + depthIncrement + depthIncrement;
 			} else {
-				//wait(NULL);
-				//childCounter--;
-				continue;
+				while(wait(NULL) > 0);
+				childCounter = 0;
+				//continue;
 			}
 		}
-		pid_t return_pid;
-		int status;
-		while (return_pid >= 0) {
-			sleep(1);
-			printf("Here");
-			return_pid = waitpid(-1, &status, WNOHANG);
-		}
+		sleep(1);
+		//pid_t return_pid;
+		//int status;
+		//while (return_pid >= 0) {
+			//printf("Here, %d\n", depth);
+		//	return_pid = waitpid(-1, &status, WNOHANG);
+		//}
 		depth--;
 		//printf("%d\n", depth);
 		index = 0;
 		childCounter = 0;
 	}
-	sleep(1);
+	//sleep(1);
 	removeSM();
 	return EXIT_SUCCESS;
 }

@@ -52,7 +52,7 @@ void process(const int id, int i, int depth) {
 	} while (j < n || (sm->turn != id && sm->flags[sm->turn] != idle));
 	
 	sm->turn = id; // Log turn based on the id of the process
-	logOutput("adder_log", "Time:%s PID:%d Index:%d Depth:%d\n", getFormattedTime(), getpid(), i, depth); // Critical Section, putting into file
+	logOutput("adder_log", "Time:%s PID:%d Index:%d Depth:%d\n", getFormattedTime(), getpid(), id, depth); // Critical Section, putting into file
 	
 	j = (sm->turn + 1) % n;
 	while (sm->flags[j] == idle) {
