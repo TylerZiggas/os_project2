@@ -1,0 +1,43 @@
+AUTHOR: Tyler Ziggas
+DATE: February 2021
+
+The purpose of this project is to take in a list of randomly generated numbers and add them together using the binary tree algorithm.
+This project is testing out usage of shared memory and the creation of child processes.
+We are never allowed to have more than 20 child processes in the system at a time and we must log the time, pid, index, and depth to a log file.
+This is done through a series of flags, forks/execs, waits, and looping.
+The program should also make sure to completely detach all children from shared memory and destroy it if the file ends prematurely.
+
+The type of inputs are as follows
+master -h
+master [-h] [-s i] [-t time] datafile
+-h Describe how the project should be run and then, terminate.
+-s x Indicate the number of children allowed to exist in the system at the same time. (Default 20)
+-t time The time in seconds after which the process will terminate, even if it has not finished. (Default 100)
+datafile Input file containing one integer on each line.
+
+NOTE: The program is specifically looking for the word "datafile" as it touches that file at the beginning of the project and writes random numbers to it when that is passed.
+
+Our suggested implementation steps for this project:
+
+1. Get a Makefile that compiles the two source files.
+
+2. Have your main executable read in the command line arguments and output the values to your screen (and
+ensure -h displays useful results). Make sure that the parameters have correct values.
+
+3. Have master allocate shared memory, use it, then deallocate it. Make sure to check all possible error returns.
+Read the data into shared memory.
+
+4. Get master to fork and exec one child and have that child attach to shared memory and read the clock. Have
+the child output any information it was passed from master and then the value of the clock to test for correct
+launch. master should wait for it to terminate and then output the value of the clock at that time.
+
+5. Put in the signal handling to terminate after specified number of seconds. A good idea to test this is to simply
+have the child go into an infinite loop so master will not ever terminate normally. Once this is working have
+it catch Ctrl-c and free up the shared memory, send a kill signal to the child and then terminate itself.
+
+6. Set up the code to fork multiple child processes until the specific limits. You’ll end up doing this in a nested
+loop. The outer loop will handle levels in the tree while the inner loop will take care of the pairs at the level.
+
+7. Make each child process perform its share of the task and update the log file.
+
+8. Ensure that the critical section problem is solved.

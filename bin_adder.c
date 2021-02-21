@@ -1,44 +1,48 @@
+// Author: Tyler Ziggas
+// Date: February 2021
+// bin_adder is the core of what the children do, dealing with the flags of solution 4 from our notes, adding the binary tree nodes, and logging the information required.
+
 #include "master.h"
 
 void process(const int, int, int);
 void signalHandler(int);
 
-int main (int argc, char *argv[]) {
-	programName=argv[0];
-	signal(SIGTERM, signalHandler);
+int main (int argc, char *argv[]) { // Main call from execl in master
+	programName=argv[0]; // Record program name 
+	signal(SIGTERM, signalHandler); // Set up signals 
 	signal(SIGUSR1, signalHandler);
-	int i = atoi(argv[1]);
+	int i = atoi(argv[1]); // Take arguments from execl and make them into ints
 	int depth = atoi(argv[2]);
 	int id = atoi (argv[3]);
-	attachSM();
-	process(id, i, depth);
+	attachSM(); // Attach shared memory
+	process(id, i, depth); // Do math, flags, and output to file
 	return EXIT_SUCCESS;
 }
 
 void process(const int id, int i, int depth) {
-	int n = sm->total;	
+	int n = sm->total; // Bring the total from shared memory
 	//printf("%s: Process %d wants to enter critical section\n", getFormattedTime(), id);
 	//sleep(1);
-	int depthIncrement = depthCounter(sm->startingDepth, depth);
+	int depthIncrement = depthCounter(sm->startingDepth, depth); // Figure out the depth increment
 	int gap = depthIncrement;
 	int secondi = i + gap;
 	int firstIndex = sm->intArray[i];	
 	int secondIndex = sm->intArray[secondi];
-	int newFirstIndex = firstIndex + secondIndex;
-	sm->intArray[i] = newFirstIndex;
+	int newFirstIndex = firstIndex + secondIndex; // Addition of first index and second index
+	sm->intArray[i] = newFirstIndex; 
 	
 	printf("%d = %d + %d\n", newFirstIndex, firstIndex, secondIndex);
 
 	int j;
-	do {
-		sm->flags[id] = want_in;
+	do { // Solution 4
+		sm->flags[id] = want_in; // Set flag
 		j = sm->turn;
 		
-		while (j != id) { 
+		while (j != id) { // Check to see if we can enter critical section
 			j = (sm->flags[j] != idle) ? sm->turn : (j + 1) % n;
 		}
 
-		sm->flags[id] = in_cs;
+		sm->flags[id] = in_cs; // Are now flagged to be in critical section
 		
 		for (j = 0; j < n; j++) {
 			if (j != id && sm->flags[j] == in_cs) {
@@ -47,19 +51,8 @@ void process(const int id, int i, int depth) {
 		}
 	} while (j < n || (sm->turn != id && sm->flags[sm->turn] != idle));
 	
-	sm->turn = id;
-	
-	/* Enter critical section */
-	
-	/* Output that process is in critical section. */
-	//fprintf(stderr, "%s: Process %d in critical section\n", getFormattedTime(), i);
-	
-	logOutput("adder_log", "Time:%s PID:%d Index:%d Depth:%d\n", getFormattedTime(), getpid(), i, depth);
-	//logOutput("Time:%s Exiting Critical Section, this sum is %d\n", getFormattedTime(), sm->intArray[i]);
-	/* Output that process is exiting critical section. */
-	//fprintf(stderr, "%s: Process %d exiting critical section\n", getFormattedTime(), i);
-	
-	/* Exit critical section */
+	sm->turn = id; // Log turn based on the id of the process
+	logOutput("adder_log", "Time:%s PID:%d Index:%d Depth:%d\n", getFormattedTime(), getpid(), i, depth); // Critical Section, putting into file
 	
 	j = (sm->turn + 1) % n;
 	while (sm->flags[j] == idle) {
@@ -70,7 +63,7 @@ void process(const int id, int i, int depth) {
 	sm->flags[id] = idle;
 }
 
-void signalHandler(int s) {
+void signalHandler(int s) { // Catches signal for ^C or Timeout
 	if (s == SIGTERM || s == SIGUSR1) {
 		printf("Child exiting...\n");
 		exit(EXIT_FAILURE);
