@@ -17,7 +17,8 @@ int main (int argc, char *argv[]) {
 
 void process(const int id, int i, int depth) {
 	int n = sm->total;	
-	printf("%s: Process %d wants to enter critical section\n", getFormattedTime(), id);
+	//printf("%s: Process %d wants to enter critical section\n", getFormattedTime(), id);
+	//sleep(1);
 	int depthIncrement = depthCounter(sm->startingDepth, depth);
 	int gap = depthIncrement;
 	int secondi = i + gap;

@@ -15,11 +15,9 @@ bool flag = false;
 
 int main (int argc, char *argv[]) {
 	programName = argv[0];
-	int character, numChild = 20, timeSec = 100, count = 0, items = 0, temp, currentChild;
+	int character, maxChild = 20, timeSec = 100, count = 0, items = 0, temp;
 	FILE* datafile;
-	//depthIncrement = 1;
 	time_t t;
-	//int depthIncrement = 1;
 	touchFile("datafile");
 	touchFile("adder_log");
 	signal(SIGINT, signalHandler);
@@ -28,7 +26,7 @@ int main (int argc, char *argv[]) {
 		switch (character) {
 			case 's':
 				if (isdigit(*optarg) && atoi(optarg) <= 20 && atoi(optarg) > 1) {
-					numChild = atoi(optarg);
+					maxChild = atoi(optarg);
 				} else {
 					errno = 22;
 					perror("-s requires an argument");
@@ -93,37 +91,36 @@ int main (int argc, char *argv[]) {
 	}
 	
 	fclose(datafile);
-	sm->total = numChild;
-	int s = items/2;
+	sm->total = maxChild;
+	//int s = items/2;
 	int index = 0;
 	int i;
-	int j = numChild;
-	int k = numChild;
 	int childCounter = 0;	
 
 	while (depth > 0) {
 		int depthIncrement = depthCounter(sm->startingDepth, depth);
 		i = index;
-		while (childCounter < s) {
-			spawnChild(childCounter++, i, depth);
-			i = i + depthIncrement + depthIncrement;
-		}
-		
-		while (k > 0) {
+		//while (childCounter < numChild) {
+		//	spawnChild(childCounter++, i, depth);
+		//	i = i + depthIncrement + depthIncrement;
+		//}
+
+		while (i < items) {
 			wait(NULL);
-			if (i < j) {
+			if (childCounter < maxChild) {
 				spawnChild(childCounter++, i, depth);
+				//printf("%d\n", childCounter);
 				i = i + depthIncrement + depthIncrement;
+			} else {
+				//wait(NULL);
+				//childCounter--;
+				continue;
 			}
-			k--;
 		}
-		sleep(1);
 		depth--;
-		//updateIncrement();
 		//printf("%d\n", depth);
 		index = 0;
 		childCounter = 0;
-		s /= 2;
 	}
 	removeSM();
 	return 0;
