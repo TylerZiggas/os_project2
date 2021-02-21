@@ -15,9 +15,10 @@ bool flag = false;
 
 int main (int argc, char *argv[]) {
 	programName = argv[0];
-	int character, maxChild = 20, timeSec = 100, count = 0, items = 0, temp; // Intiailize necessary variables
+	int character, optargCount, maxChild = 20, timeSec = 100, count = 0, items = 0, temp; // Intiailize necessary variables
 	FILE* datafile;
 	time_t t;
+	bool allDigit = true;
 	touchFile("datafile"); // This is the file we are looking for as we are randomly generating it to that
 	touchFile("adder_log");
 	signal(SIGINT, signalHandler);
@@ -25,23 +26,41 @@ int main (int argc, char *argv[]) {
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) { // Set up command line parsing
 		switch (character) { 
 			case 's': // Change the maxChildren at a time
-				if (isdigit(*optarg) && atoi(optarg) <= 20 && atoi(optarg) > 1) {
-					maxChild = atoi(optarg);
+				allDigit = true;
+				for (optargCount = 0; optargCount < strlen(optarg); optargCount++) { // Check if entire optarg is digit
+					if (!isdigit(optarg[optargCount])) {
+						allDigit = false;
+						break;
+					}
+				}		
+				if (allDigit) { // After that, check if it meets requirements to change max
+					if ((atoi(optarg) <= 20) && (atoi(optarg) > 1)) {
+						maxChild = atoi(optarg);
+					}
 				} else {
 					errno = 22;
 					perror("-s requires an argument");
 					helpMenu();
-					return 1;
+					return EXIT_FAILURE;
 				}
 				continue;
 			case 't': // Change the max allowed time
-				if (isdigit(*optarg) && atoi(optarg) > 0) {
-					timeSec = atoi(optarg);
+				allDigit = true;
+				for (optargCount = 0; optargCount < strlen(optarg); optargCount++) { // Check if optarg is digit
+					if(!isdigit(optarg[optargCount])) {
+						allDigit = false;
+						break;
+					}
+				}
+				if (allDigit) { // See if we meet requirements to change timer
+					if (atoi(optarg) > 0) {
+						timeSec = atoi(optarg);
+					}
 				} else {
 					errno = 22;
 					perror("-t requires and argument");
 					helpMenu();
-					return 1;
+					return EXIT_FAILURE;
 				}
 				continue;
 			case 'h': // Show a help menu if confused
@@ -56,7 +75,7 @@ int main (int argc, char *argv[]) {
 	if (optind < argc) { // Check next argument once getopt finishes
 		datafile = fopen(argv[optind], "r+"); // Open the datafile
 		if (!datafile) { // If it does not exist
-			printf("Problem with the datafile.");
+			printf("Problem with the datafile\n");
 			return 1;
 		} else { // Create the random numbers in the file otherwise
 			int randCount, random;
@@ -93,45 +112,29 @@ int main (int argc, char *argv[]) {
 	
 	fclose(datafile); // Close the datafile
 	sm->total = maxChild;
-	//int s = items/2;
 	int index = 0;
 	int i;
 	int childCounter = 0;	
 
-	while (depth > 0) {
-		int depthIncrement = depthCounter(sm->startingDepth, depth);
+	while (depth > 0) { // Going through loop for every depth
+		int depthIncrement = depthCounter(sm->startingDepth, depth); // Figure out new depth increment
 		i = index;
-		//while (childCounter < numChild) {
-		//	spawnChild(childCounter++, i, depth);
-		//	i = i + depthIncrement + depthIncrement;
-		//}
 
-		while (i < items) {
-			//wait(NULL);
-			if (childCounter < maxChild) {
+		while (i < items) { // Go through until we are passed the number of items
+			if (childCounter < maxChild) { // Spawn children based on max allowed
 				spawnChild(childCounter++, i, depth);
-				//printf("%d\n", childCounter);
 				i = i + depthIncrement + depthIncrement;
-			} else {
+			} else { // Else wait for children to finish and keep making more
 				while(wait(NULL) > 0);
 				childCounter = 0;
-				//continue;
 			}
 		}
-		sleep(1);
-		//pid_t return_pid;
-		//int status;
-		//while (return_pid >= 0) {
-			//printf("Here, %d\n", depth);
-		//	return_pid = waitpid(-1, &status, WNOHANG);
-		//}
+		while(wait(NULL) > 0); // Wait for all to end before going to next depth
 		depth--;
-		//printf("%d\n", depth);
 		index = 0;
 		childCounter = 0;
 	}
-	//sleep(1);
-	removeSM();
+	removeSM(); // Removing the shared memory once children are done
 	return EXIT_SUCCESS;
 }
 
@@ -148,7 +151,6 @@ void setupTimer(const int t) { // Creation of the timer
 	struct itimerval timer;
 	timer.it_value.tv_sec = t;
 	timer.it_value.tv_usec = t;
-	
 	timer.it_interval.tv_sec = 0;
 	timer.it_interval.tv_usec = 0;
 	
