@@ -1,5 +1,6 @@
 AUTHOR: Tyler Ziggas
 DATE: February 2021
+NOTE: The program is specifically looking for the word "datafile" as it touches that file at the beginning of the project and writes random numbers to it when that is passed.
 
 The purpose of this project is to take in a list of randomly generated numbers and add them together using the binary tree algorithm.
 This project is testing out usage of shared memory and the creation of child processes.
@@ -14,8 +15,6 @@ master [-h] [-s i] [-t time] datafile
 -s x Indicate the number of children allowed to exist in the system at the same time. (Default 20)
 -t time The time in seconds after which the process will terminate, even if it has not finished. (Default 100)
 datafile Input file containing one integer on each line.
-
-NOTE: The program is specifically looking for the word "datafile" as it touches that file at the beginning of the project and writes random numbers to it when that is passed.
 
 Our suggested implementation steps for this project:
 

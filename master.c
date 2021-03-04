@@ -14,13 +14,12 @@ void helpMenu();
 bool flag = false;
 
 int main (int argc, char *argv[]) {
-	programName = argv[0];
 	int character, optargCount, maxChild = 20, timeSec = 100, count = 0, items = 0, temp; // Intiailize necessary variables
 	FILE* datafile;
 	time_t t;
 	bool allDigit = true;
-	touchFile("datafile"); // This is the file we are looking for as we are randomly generating it to that
-	touchFile("adder_log");
+	createFile("datafile"); // This is the file we are looking for as we are randomly generating it to that
+	createFile("adder_log");
 	signal(SIGINT, signalHandler);
 
 	while ((character = getopt(argc, argv, "s:t:h")) != -1) { // Set up command line parsing

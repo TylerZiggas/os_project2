@@ -37,13 +37,12 @@ struct SharedMemory {
 };
 
 // Shared memory declarations
-char* programName;
 int smKey;
 int smID;
 struct SharedMemory* sm;
 
 // Functions that reside with shared.c
-void touchFile(char*);
+void createFile(char*);
 void logOutput(char*, char*, ...);
 void allocateSM();
 void attachSM();

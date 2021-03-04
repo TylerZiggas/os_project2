@@ -8,7 +8,6 @@ void process(const int, int, int);
 void signalHandler(int);
 
 int main (int argc, char *argv[]) { // Main call from execl in master
-	programName=argv[0]; // Record program name 
 	signal(SIGTERM, signalHandler); // Set up signals 
 	signal(SIGUSR1, signalHandler);
 	int i = atoi(argv[1]); // Take arguments from execl and make them into ints
@@ -22,7 +21,6 @@ int main (int argc, char *argv[]) { // Main call from execl in master
 void process(const int id, int i, int depth) {
 	int n = sm->total; // Bring the total from shared memory
 	//printf("%s: Process %d wants to enter critical section\n", getFormattedTime(), id);
-	//sleep(1);
 	int depthIncrement = depthCounter(sm->startingDepth, depth); // Figure out the depth increment
 	int gap = depthIncrement;
 	int secondi = i + gap;
@@ -31,8 +29,9 @@ void process(const int id, int i, int depth) {
 	int newFirstIndex = firstIndex + secondIndex; // Addition of first index and second index
 	sm->intArray[i] = newFirstIndex; 
 	
-	printf("%d = %d + %d\n", newFirstIndex, firstIndex, secondIndex);
-
+	printf("%s Child %d is trying to enter critical section\n", getFormattedTime(), id);
+	//printf("%d = %d + %d\n", newFirstIndex, firstIndex, secondIndex);
+	// Uncomment above to see math
 	int j;
 	do { // Solution 4
 		sm->flags[id] = want_in; // Set flag
@@ -53,6 +52,7 @@ void process(const int id, int i, int depth) {
 	
 	sm->turn = id; // Log turn based on the id of the process
 	logOutput("adder_log", "Time:%s PID:%d Index:%d Depth:%d\n", getFormattedTime(), getpid(), id, depth); // Critical Section, putting into file
+	printf("%s Child %d is leaving critical section\n", getFormattedTime(), id);
 	
 	j = (sm->turn + 1) % n;
 	while (sm->flags[j] == idle) {

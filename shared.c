@@ -1,6 +1,6 @@
 #include "master.h"
 
-void touchFile(char* path) { // Creation of files
+void createFile(char* path) { // Creation of files
 	FILE* newFile = fopen(path, "w"); // Take whatever char* was passed
 		if (newFile == NULL) { // If there is a problem creating the file
 			perror("Failed to touch file");
